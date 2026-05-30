@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Gemini</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Ask Gemini</h1>
+            <p>Apna sawal pooch aur AI se jawab pao</p>
+        </div>
+
+        <div class="chat-box">
+            <div id="answers" class="answers-container">
+                <!-- Answers yahan display honge -->
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="questionInput" 
+                    placeholder="Apna sawal likho... jaise 'JavaScript kya hota hai?'"
+                    class="question-input"
+                >
+                <button id="submitBtn" class="submit-btn">Send</button>
+            </div>
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Gemini se jawab mil raha hai...</p>
+            </div>
+            <div id="error" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
