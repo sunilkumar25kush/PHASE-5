@@ -1,5 +1,7 @@
-// Backend server ka URL
-const BACKEND_URL = "http://localhost:3000";
+// Backend server ka URL - production aur development dono mein kaam karega
+const BACKEND_URL = window.location.hostname === "localhost" 
+    ? "http://localhost:3000" 
+    : "";
 
 const questionInput = document.getElementById("questionInput");
 const submitBtn = document.getElementById("submitBtn");
