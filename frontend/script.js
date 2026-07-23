@@ -1,7 +1,4 @@
-// Backend server ka URL - production aur development dono mein kaam karega
-const BACKEND_URL = window.location.hostname === "localhost" 
-    ? "http://localhost:3000" 
-    : "";
+const BACKEND_URL = window.location.origin; 
 
 const questionInput = document.getElementById("questionInput");
 const submitBtn = document.getElementById("submitBtn");
@@ -20,26 +17,28 @@ questionInput.addEventListener("keypress", (e) => {
 });
 
 async function askQuestion() {
-    const question = questionInput.value.trim();
+
+
+    const question =  questionInput.value.trim();
 
     // Validation
     if (!question) {
-        showError("Sawal khali nahi ho sakta!");
+        showError("Question cannot be empty!");
         return;
     }
 
     // Clear previous errors
     hideError();
 
-    // Disable button aur show loading
+    // Disable button and show loading
     submitBtn.disabled = true;
     loadingDiv.classList.remove("hidden");
 
     try {
-        // Question ko display karo
+        // Display question
         displayQuestion(question);
 
-        // Backend ko POST request bhejo
+        // Send POST request to backend
         const response = await fetch(`${BACKEND_URL}/ask`, {
             method: "POST",
             headers: {
@@ -49,25 +48,21 @@ async function askQuestion() {
         });
         console.log(response)
 
-        // Response check karo
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const data = await response.json().catch(() => null);
 
-        const data = await response.json();
-
-        if (data.success) {
-            // Answer ko display karo
+        if (response.ok && data && data.success) {
+            // Display answer
             displayAnswer(data.answer);
-            // Input clear karo
+            // Clear input
             questionInput.value = "";
         } else {
-            showError(data.error || "Kuch gadbad ho gayi");
+            const errorMsg = (data && data.error) ? data.error : `Server Error (${response.status})`;
+            showError(errorMsg);
         }
 
     } catch (error) {
         console.error("Error:", error);
-        showError("Backend se connect nahi ho saka. Kya server chal raha hai?");
+        showError("Could not connect to the server. Please check if backend is running.");
     } finally {
         // Button ko enable karo aur loading hide karo
         submitBtn.disabled = false;
@@ -85,10 +80,27 @@ function displayQuestion(question) {
     answersContainer.scrollTop = answersContainer.scrollHeight;
 }
 
+function renderMarkdown(text) {
+    if (typeof marked !== "undefined" && typeof marked.parse === "function") {
+        return marked.parse(text, { breaks: true });
+    }
+    // Fallback if marked JS is unavailable
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/### (.*)/g, "<h3>$1</h3>")
+        .replace(/## (.*)/g, "<h2>$1</h2>")
+        .replace(/# (.*)/g, "<h1>$1</h1>")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        .replace(/\n/g, "<br>");
+}
+
 function displayAnswer(answer) {
     const messageDiv = document.createElement("div");
     messageDiv.className = "message answer";
-    messageDiv.textContent = answer;
+    messageDiv.innerHTML = renderMarkdown(answer);
     answersContainer.appendChild(messageDiv);
     
     // Scroll to bottom

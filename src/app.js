@@ -21,34 +21,31 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 app.post("/ask", async (req, res) => {
   try {
     const { question } = req.body;
+    console.log(question)
 
     // Validation
     if (!question || question.trim() === "") {
       return res.status(400).json({
         success: false,
-        error: "Question khali nahi ho sakta"
+        error: "Question cannot be empty."
       });
     }
 
     if (!GEMINI_API_KEY) {
       return res.status(500).json({
         success: false,
-        error: "API key configured nahi hai"
+        error: "API key is not configured."
       });
     }
 
-    // Model get karo
+    // Model get (gemini-2.5-flash as specified)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // Gemini ko question bhejo
+    // Send question to Gemini
     const result = await model.generateContent(question);
-
-    console.log("API RESULT: ",result)
-
-    // Response nikal lo
     const answer = result.response.text();
 
-    // Frontend ko answer bhejo
+    // Return response to frontend
     res.json({
       success: true,
       question: question,
@@ -57,18 +54,22 @@ app.post("/ask", async (req, res) => {
 
   } catch (error) {
     console.error("Gemini API error:", error.message);
-    console.error("Full error:", error);
     
+    let errorMsg = error.message || "Could not get response from Gemini. Please try again.";
+    if (error.message && (error.message.includes("429") || error.message.includes("Quota exceeded"))) {
+      errorMsg = "API Free Quota limit exceeded. Please try again in 1 minute or check your API key.";
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message || "Gemini se answer nahi mil saka. Dobara try karo."
+      error: errorMsg
     });
   }
 });
 
 // Health check route
 app.get("/health", (req, res) => {
-  res.json({ status: "Server chal raha hai ✅" });
+  res.json({ status: "Server is running ✅" });
 });
 
 module.exports = app

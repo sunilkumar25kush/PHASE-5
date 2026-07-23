@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask Gemini</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Marked JS for formatting Markdown response -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>✨ Ask Gemini</h1>
-            <p>Apna sawal pooch aur AI se jawab pao</p>
+            <p>Ask any question and get instant AI answers</p>
         </div>
 
         <div class="chat-box">
             <div id="answers" class="answers-container">
-                <!-- Answers yahan display honge -->
+                <!-- Answers will be rendered here -->
             </div>
         </div>
 
@@ -24,14 +26,14 @@
                 <input 
                     type="text" 
                     id="questionInput" 
-                    placeholder="Apna sawal likho... jaise 'JavaScript kya hota hai?'"
+                    placeholder="Type your question... e.g. 'What is JavaScript?'"
                     class="question-input"
                 >
                 <button id="submitBtn" class="submit-btn">Send</button>
             </div>
             <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
-                <p>Gemini se jawab mil raha hai...</p>
+                <p>Getting response from Gemini...</p>
             </div>
             <div id="error" class="error-message hidden"></div>
         </div>

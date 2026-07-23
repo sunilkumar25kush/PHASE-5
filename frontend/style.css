@@ -88,11 +88,95 @@ body {
 
 .answer {
     background: white;
-    color: #333;
+    color: #2d3748;
     margin-right: auto;
     max-width: 85%;
-    border: 1px solid #e0e0e0;
-    border-radius: 0 10px 10px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 12px 12px 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Markdown formatting inside .answer */
+.answer p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.answer p:last-child {
+    margin-bottom: 0;
+}
+
+.answer h1, .answer h2, .answer h3, .answer h4 {
+    margin-top: 14px;
+    margin-bottom: 8px;
+    color: #1a202c;
+    font-weight: 600;
+}
+
+.answer h1 { font-size: 1.25em; border-bottom: 1px solid #edf2f7; padding-bottom: 4px; }
+.answer h2 { font-size: 1.15em; }
+.answer h3 { font-size: 1.05em; }
+
+.answer ul, .answer ol {
+    margin-top: 6px;
+    margin-bottom: 10px;
+    padding-left: 22px;
+}
+
+.answer li {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.answer code {
+    background: #edf2f7;
+    color: #c7254e;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+.answer pre {
+    background: #2d3748;
+    color: #f7fafc;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
+.answer pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+.answer blockquote {
+    border-left: 4px solid #667eea;
+    padding-left: 12px;
+    margin: 10px 0;
+    color: #4a5568;
+    font-style: italic;
+}
+
+.answer table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.95em;
+}
+
+.answer th, .answer td {
+    border: 1px solid #cbd5e0;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.answer th {
+    background-color: #f7fafc;
+    font-weight: 600;
 }
 
 .input-section {
