@@ -246,8 +246,8 @@ async function askQuestion(question) {
         }
 
     } catch (error) {
-        console.error("Error:", error);
-        showError("Could not connect to the backend server. Please verify node server is running on http://localhost:3000.");
+        console.error("Fetch Error:", error);
+        showError("Could not connect to the backend server. If running locally, please start the server via 'npm start' on http://localhost:3000.");
     } finally {
         submitBtn.disabled = false;
         loadingDiv.classList.add("hidden");
