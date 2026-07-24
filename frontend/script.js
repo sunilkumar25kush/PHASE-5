@@ -224,13 +224,27 @@ async function askQuestion(question) {
     try {
         displayQuestion(question);
 
-        const response = await fetch(`${BACKEND_URL}/ask`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ question: question })
-        });
+        let response = null;
+        try {
+            response = await fetch(`${BACKEND_URL}/ask`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: question })
+            });
+        } catch (fetchErr) {
+            // Automatic fallback retry if primary endpoint throws network/CORS error
+            console.warn("Primary fetch failed, trying fallback endpoint...", fetchErr);
+            const fallbackTarget = BACKEND_URL.includes("localhost") ? "/ask" : "http://localhost:3000/ask";
+            response = await fetch(fallbackTarget, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: question })
+            });
+        }
 
         const data = await response.json().catch(() => null);
 
@@ -239,15 +253,15 @@ async function askQuestion(question) {
         } else {
             const errorMsg = (data && (data.error || data.message))
                 ? (data.error || data.message)
-                : (response.status === 405 
+                : (response && response.status === 405 
                     ? "HTTP 405: Method Not Allowed. Backend server expects POST /ask." 
-                    : `Server returned status ${response.status}`);
+                    : `Server returned status ${response ? response.status : 'Unknown'}`);
             showError(errorMsg);
         }
 
     } catch (error) {
         console.error("Fetch Error:", error);
-        showError("Could not connect to the backend server. If running locally, please start the server via 'npm start' on http://localhost:3000.");
+        showError("Could not connect to the backend server. Please verify node server is running on http://localhost:3000.");
     } finally {
         submitBtn.disabled = false;
         loadingDiv.classList.add("hidden");
