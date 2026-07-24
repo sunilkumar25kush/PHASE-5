@@ -220,50 +220,58 @@ async function askQuestion(question) {
     loadingDiv.classList.remove("hidden");
 
     showToast("Taking scrot..");
-
     displayQuestion(question);
 
-    const endpoints = [
-        "/ask",
-        `${BACKEND_URL}/ask`,
-        "http://localhost:3000/ask"
-    ];
-
-    let lastError = null;
+    let response = null;
+    let responseText = null;
     let data = null;
+    let networkError = null;
 
-    // Retry loop across available endpoints & transient restarts
-    for (let attempt = 0; attempt < 2; attempt++) {
-        for (const endpoint of endpoints) {
+    const targetUrl = (window.location.protocol.startsWith("http") && window.location.origin)
+        ? `${window.location.origin}/ask`
+        : "http://localhost:3000/ask";
+
+    const endpoints = Array.from(new Set([
+        targetUrl,
+        "/ask",
+        "http://localhost:3000/ask"
+    ]));
+
+    for (const endpoint of endpoints) {
+        try {
+            response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: question })
+            });
+
+            responseText = await response.text();
             try {
-                const response = await fetch(endpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ question: question })
-                });
-
-                data = await response.json().catch(() => null);
-                if (data) break;
-            } catch (err) {
-                lastError = err;
+                data = JSON.parse(responseText);
+            } catch (e) {
+                data = null;
             }
+            if (response.ok || data) break;
+        } catch (err) {
+            networkError = err;
         }
-        if (data) break;
-        // Bounded wait for server startup
-        await new Promise(r => setTimeout(r, 800));
     }
 
     try {
-        if (data && (data.answer || data.success)) {
-            displayAnswer(data.answer || "No response text generated.");
+        if (data && data.answer) {
+            displayAnswer(data.answer);
         } else if (data && (data.error || data.message)) {
             showError(data.error || data.message);
+        } else if (responseText && responseText.trim()) {
+            displayAnswer(responseText.trim());
+        } else if (response && !response.ok) {
+            showError(`Server HTTP Error (${response.status}): Failed to fetch Gemini response.`);
         } else {
-            showError("Could not connect to the backend server. Please make sure the Node server is running on http://localhost:3000.");
+            showError("Could not connect to backend server. Please verify Node server is running on http://localhost:3000.");
         }
     } catch (error) {
-        console.error("Fetch Error:", error);
-        showError("Could not connect to the backend server. Please make sure the Node server is running on http://localhost:3000.");
+        console.error("Display Error:", error);
+        showError("An unexpected error occurred while displaying response.");
     } finally {
         submitBtn.disabled = false;
         loadingDiv.classList.add("hidden");
