@@ -3,6 +3,7 @@ const BACKEND_URL = (window.location.protocol.startsWith("http"))
     : "http://localhost:3000"; 
 
 const questionInput = document.getElementById("questionInput");
+const terminalInput = questionInput;
 const submitBtn = document.getElementById("submitBtn");
 const answersContainer = document.getElementById("answers");
 const loadingDiv = document.getElementById("loading");
