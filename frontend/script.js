@@ -285,11 +285,36 @@ function renderMarkdown(text) {
 
 function displayAnswer(answer) {
     const messageDiv = document.createElement("div");
-    messageDiv.className = "message answer";
-    messageDiv.innerHTML = renderMarkdown(answer);
+    messageDiv.className = "message answer terminal-typing";
     answersContainer.appendChild(messageDiv);
     
-    answersContainer.scrollTop = answersContainer.scrollHeight;
+    // Disable inputs while output streams like a real Linux terminal
+    terminalInput.disabled = true;
+    submitBtn.disabled = true;
+    
+    let currentIndex = 0;
+    const fullHtml = renderMarkdown(answer);
+    
+    // Dynamic chunking for smooth real terminal streaming output
+    const chunkSize = answer.length > 800 ? 8 : (answer.length > 300 ? 4 : 2);
+    const intervalTime = 12;
+
+    const timer = setInterval(() => {
+        currentIndex += chunkSize;
+        if (currentIndex >= answer.length) {
+            currentIndex = answer.length;
+            clearInterval(timer);
+            messageDiv.innerHTML = fullHtml;
+            messageDiv.classList.remove("terminal-typing");
+            terminalInput.disabled = false;
+            submitBtn.disabled = false;
+            terminalInput.focus();
+        } else {
+            const currentText = answer.substring(0, currentIndex);
+            messageDiv.innerHTML = renderMarkdown(currentText) + `<span class="terminal-cursor">▋</span>`;
+        }
+        answersContainer.scrollTop = answersContainer.scrollHeight;
+    }, intervalTime);
 }
 
 function showError(message) {
