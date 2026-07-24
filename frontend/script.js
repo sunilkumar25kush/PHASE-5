@@ -221,47 +221,49 @@ async function askQuestion(question) {
 
     showToast("Taking scrot..");
 
+    displayQuestion(question);
+
+    const endpoints = [
+        "/ask",
+        `${BACKEND_URL}/ask`,
+        "http://localhost:3000/ask"
+    ];
+
+    let lastError = null;
+    let data = null;
+
+    // Retry loop across available endpoints & transient restarts
+    for (let attempt = 0; attempt < 2; attempt++) {
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: question })
+                });
+
+                data = await response.json().catch(() => null);
+                if (data) break;
+            } catch (err) {
+                lastError = err;
+            }
+        }
+        if (data) break;
+        // Bounded wait for server startup
+        await new Promise(r => setTimeout(r, 800));
+    }
+
     try {
-        displayQuestion(question);
-
-        let response = null;
-        try {
-            response = await fetch(`${BACKEND_URL}/ask`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ question: question })
-            });
-        } catch (fetchErr) {
-            // Automatic fallback retry if primary endpoint throws network/CORS error
-            console.warn("Primary fetch failed, trying fallback endpoint...", fetchErr);
-            const fallbackTarget = BACKEND_URL.includes("localhost") ? "/ask" : "http://localhost:3000/ask";
-            response = await fetch(fallbackTarget, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ question: question })
-            });
-        }
-
-        const data = await response.json().catch(() => null);
-
-        if (data && data.success && data.answer) {
-            displayAnswer(data.answer);
+        if (data && (data.answer || data.success)) {
+            displayAnswer(data.answer || "No response text generated.");
+        } else if (data && (data.error || data.message)) {
+            showError(data.error || data.message);
         } else {
-            const errorMsg = (data && (data.error || data.message))
-                ? (data.error || data.message)
-                : (response && response.status === 405 
-                    ? "HTTP 405: Method Not Allowed. Backend server expects POST /ask." 
-                    : `Server returned status ${response ? response.status : 'Unknown'}`);
-            showError(errorMsg);
+            showError("Could not connect to the backend server. Please make sure the Node server is running on http://localhost:3000.");
         }
-
     } catch (error) {
         console.error("Fetch Error:", error);
-        showError("Could not connect to the backend server. Please verify node server is running on http://localhost:3000.");
+        showError("Could not connect to the backend server. Please make sure the Node server is running on http://localhost:3000.");
     } finally {
         submitBtn.disabled = false;
         loadingDiv.classList.add("hidden");
