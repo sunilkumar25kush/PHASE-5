@@ -14,6 +14,11 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// Serve root index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
+
 // Initialize Google Generative AI
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "");
