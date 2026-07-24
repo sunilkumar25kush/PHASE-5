@@ -3,41 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask Gemini</title>
+    <title>archlinux - i3-wm - ask gemini</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Monospace Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Marked JS for formatting Markdown response -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>✨ Ask Gemini</h1>
-            <p>Ask any question and get instant AI answers</p>
-        </div>
+<body class="i3-desktop" data-workspace="1">
 
-        <div class="chat-box">
-            <div id="answers" class="answers-container">
-                <!-- Answers will be rendered here -->
-            </div>
-        </div>
+    <!-- Desktop Background Overlay (Unchanged as requested) -->
+    <div class="wallpaper-bg"></div>
 
-        <div class="input-section">
-            <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    id="questionInput" 
-                    placeholder="Type your question... e.g. 'What is JavaScript?'"
-                    class="question-input"
-                >
-                <button id="submitBtn" class="submit-btn">Send</button>
-            </div>
-            <div id="loading" class="loading hidden">
-                <div class="spinner"></div>
-                <p>Getting response from Gemini...</p>
-            </div>
-            <div id="error" class="error-message hidden"></div>
+    <!-- Floating Top-Right Notification Popup -->
+    <div id="scrotNotification" class="toast-notification">
+        <span class="toast-text">Taking scrot..</span>
+    </div>
+
+    <!-- Retro Anime Girl Floating Side Card (Updated with pin_girl.png) -->
+    <div id="retroGirlWidget" class="retro-girl-widget">
+        <div class="widget-header">
+            <span class="widget-title">★ RETR0_GIRL</span>
+            <span class="widget-status">ONLINE</span>
+        </div>
+        <div class="widget-img-wrapper">
+            <img src="pin_girl.png" alt="Retro Anime Girl" class="widget-girl-img">
+            <div class="scanline-overlay"></div>
         </div>
     </div>
+
+    <!-- Workspace 2 Specific Retro Windows & Desktop Widgets -->
+    <div class="ws2-widget ws2-desktop-icons">
+        <img src="widget_icons.png" alt="Desktop Icons" class="ws2-img">
+    </div>
+
+    <!-- Main Outer Wrapper for Decals & Widgets around Terminal -->
+    <div class="terminal-container-wrapper">
+
+        <!-- Workspace 2 Retro Window Cards around Terminal -->
+        <div class="ws2-widget ws2-nerv-card">
+            <img src="widget_nerv.png" alt="NERV Evangelion Card" class="ws2-img">
+        </div>
+
+        <div class="ws2-widget ws2-music-player">
+            <img src="widget_music_player.png" alt="AIMP Music Player" class="ws2-img">
+        </div>
+
+        <div class="ws2-widget ws2-warning-popup">
+            <img src="widget_warning.png" alt="Heart Wall Warning" class="ws2-img">
+        </div>
+
+        <div class="ws2-widget ws2-file-not-found">
+            <img src="widget_file_not_found.png" alt="File Not Found" class="ws2-img">
+        </div>
+
+        <!-- Graphic Decals Surrounding Terminal Window -->
+        <div class="decal decal-top-left">
+            <span class="decal-icon">✦ ✚ ✧</span>
+            <span class="decal-text">ARCH_SYS // NO. 989947561</span>
+        </div>
+
+        <div class="decal decal-top-right">
+            <div class="barcode-block">
+                <span class="barcode-lines">||||| | ||||| || | |||| |||</span>
+                <span class="barcode-num">#989-947561-891</span>
+            </div>
+        </div>
+
+        <div class="decal decal-left-spine">
+            <span class="spine-text">G O T H I C . D R E A M S . X X I</span>
+        </div>
+
+        <div class="decal decal-right-spine">
+            <span class="spine-text">V I N T A G E . Y 2 K . S P E C</span>
+        </div>
+
+        <div class="decal decal-bottom-left">
+            <div class="gothic-seal">
+                <span class="seal-cross">✙</span>
+                <span class="seal-label">CASTLE // ARCH-VINTAGE</span>
+            </div>
+        </div>
+
+        <div class="decal decal-bottom-right">
+            <div class="stamp-box">
+                <span class="stamp-title">SEAL OF APPROVAL</span>
+                <span class="stamp-code">NO. 989947561</span>
+            </div>
+        </div>
+
+        <!-- Main Terminal Window Container -->
+        <div class="terminal-window">
+
+            <!-- Corner Frame Accents -->
+            <div class="corner-bracket top-left"></div>
+            <div class="corner-bracket top-right"></div>
+            <div class="corner-bracket bottom-left"></div>
+            <div class="corner-bracket bottom-right"></div>
+
+            <!-- Terminal Header / Titlebar -->
+            <div class="terminal-titlebar">
+                <span class="title-text">bash - gemini-ai@archlinux:~ (ws:1)</span>
+                <div class="window-controls">
+                    <span class="win-btn">_</span>
+                    <span class="win-btn">□</span>
+                    <span class="win-btn close">×</span>
+                </div>
+            </div>
+
+            <div class="terminal-body">
+                <!-- Neofetch / System Info Header -->
+                <div class="neofetch-header">
+                    <div class="neofetch-preview">
+                        <img src="neofetch_custom.png" alt="Neofetch Image" class="neofetch-img">
+                    </div>
+                    <div class="neofetch-info">
+                        <p><span class="spec-label">OS:</span> <span class="spec-val">Arch Linux x86_64</span></p>
+                        <p><span class="spec-label">Kernel:</span> <span class="spec-val">Linux 4.15.13-1-ARCH</span></p>
+                        <p><span class="spec-label">WM:</span> <span class="spec-val">i3-gaps (antigravity)</span></p>
+                        <p><span class="spec-label">CPU:</span> <span class="spec-val">Gemini 2.5 Flash [38.0°C]</span></p>
+                        <p><span class="spec-label">Song:</span> <span class="spec-val">Bathory - Foreverdark Woods</span></p>
+                    </div>
+                </div>
+
+                <!-- Terminal Conversation Log Area -->
+                <div id="answers" class="terminal-answers">
+                    <div class="message system-msg">
+                        <span class="prompt-prefix">user@arch:~$</span> ask-gemini --version 2.5-flash<br>
+                        <span class="info-text">Ask any question or type 'help' / 'clear'. Press Enter to execute.</span>
+                    </div>
+                </div>
+
+                <!-- Error Banner -->
+                <div id="error" class="error-message hidden"></div>
+
+                <!-- Loading Spinner / Indicator -->
+                <div id="loading" class="loading hidden">
+                    <span class="loading-dots">Asking Gemini<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+                </div>
+
+                <!-- Terminal Input Prompt -->
+                <div class="input-section">
+                    <div class="prompt-line">
+                        <span class="lambda-prompt">λ ~/_</span>
+                        <input 
+                            type="text" 
+                            id="questionInput" 
+                            placeholder="Type your question..."
+                            class="question-input"
+                            autocomplete="off"
+                            autofocus
+                        >
+                        <button id="submitBtn" class="submit-btn">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Status Bar (Polybar / i3bar) -->
+    <footer class="i3-statusbar">
+        <div class="bar-left">
+            <div class="workspace-group">
+                <button class="ws-btn active" data-ws="1">1</button>
+                <button class="ws-btn" data-ws="2">2</button>
+                <button class="ws-btn" data-ws="3">3</button>
+                <button class="ws-btn" data-ws="4">4</button>
+            </div>
+        </div>
+        <div class="bar-right">
+            <span class="stat-item"><span class="stat-icon">💾</span> 206.8 GiB</span>
+            <span class="stat-separator">|</span>
+            <span class="stat-item"><span class="stat-icon">📊</span> <span class="cpu-bar">[████░░░░]</span> 93.60%</span>
+            <span class="stat-separator">|</span>
+            <span id="statusBarClock" class="stat-item clock">Thursday Mar/29/18 1:31pm</span>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>

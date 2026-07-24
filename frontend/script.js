@@ -1,44 +1,229 @@
-const BACKEND_URL = window.location.origin; 
+const BACKEND_URL = (window.location.protocol.startsWith("http")) 
+    ? window.location.origin 
+    : "http://localhost:3000"; 
 
 const questionInput = document.getElementById("questionInput");
 const submitBtn = document.getElementById("submitBtn");
 const answersContainer = document.getElementById("answers");
 const loadingDiv = document.getElementById("loading");
 const errorDiv = document.getElementById("error");
+const scrotNotification = document.getElementById("scrotNotification");
+const statusBarClock = document.getElementById("statusBarClock");
+const wsButtons = document.querySelectorAll(".ws-btn");
+const wallpaperBg = document.querySelector(".wallpaper-bg");
+const neofetchImg = document.querySelector(".neofetch-img");
+const neofetchInfo = document.querySelector(".neofetch-info");
+const terminalTitle = document.querySelector(".title-text");
+
+// Workspace Configuration Database
+const WORKSPACE_THEMES = {
+    "1": {
+        name: "Evangelion Purple Gothic",
+        wallpaper: "wallpaper_ws1.png",
+        neofetchImg: "neofetch_custom.png",
+        title: "bash - gemini-ai@archlinux:~ (ws:1)",
+        specs: `
+            <p><span class="spec-label">OS:</span> <span class="spec-val">Arch Linux x86_64</span></p>
+            <p><span class="spec-label">Kernel:</span> <span class="spec-val">Linux 4.15.13-1-ARCH</span></p>
+            <p><span class="spec-label">WM:</span> <span class="spec-val">i3-gaps (antigravity)</span></p>
+            <p><span class="spec-label">CPU:</span> <span class="spec-val">Gemini 2.5 Flash [38.0°C]</span></p>
+            <p><span class="spec-label">Song:</span> <span class="spec-val">Bathory - Foreverdark Woods</span></p>
+        `,
+        toastMsg: "Workspace 1: Evangelion Purple Gothic"
+    },
+    "2": {
+        name: "Violet Dark Aesthetic",
+        wallpaper: "wallpaper_ws2.png",
+        neofetchImg: "neofetch_ws2.png",
+        title: "zsh - gemini-ai@archlinux:~ (ws:2)",
+        specs: `
+            <p><span class="spec-label">OS:</span> <span class="spec-val">Arch Linux (Violet-Rice)</span></p>
+            <p><span class="spec-label">Kernel:</span> <span class="spec-val">Linux 6.1.0-VIOLET</span></p>
+            <p><span class="spec-label">WM:</span> <span class="spec-val">bspwm (polybar)</span></p>
+            <p><span class="spec-label">CPU:</span> <span class="spec-val">Gemini 2.5 Flash [35.2°C]</span></p>
+            <p><span class="spec-label">Song:</span> <span class="spec-val">Lofi Girl - Midnight Chill</span></p>
+        `,
+        toastMsg: "Workspace 2: Violet Dark Aesthetic"
+    },
+    "3": {
+        name: "Retro Anime Girl Rice",
+        wallpaper: "wallpaper_ws3.png",
+        neofetchImg: "neofetch_ws3.png",
+        title: "fish - gemini-ai@archlinux:~ (ws:3)",
+        specs: `
+            <p><span class="spec-label">OS:</span> <span class="spec-val">Arch Linux (Retro-Girl)</span></p>
+            <p><span class="spec-label">Kernel:</span> <span class="spec-val">Linux 6.6.0-HYPR</span></p>
+            <p><span class="spec-label">WM:</span> <span class="spec-val">hyprland (waybar)</span></p>
+            <p><span class="spec-label">CPU:</span> <span class="spec-val">Gemini 2.5 Flash [32.0°C]</span></p>
+            <p><span class="spec-label">Song:</span> <span class="spec-val">Tatsuro Yamashita - Ride On Time</span></p>
+        `,
+        toastMsg: "Workspace 3: Retro Anime Girl Rice"
+    },
+    "4": {
+        name: "Cyberpunk Synthwave Neon",
+        wallpaper: "wallpaper_ws4.png",
+        neofetchImg: "neofetch_ws4_ascii.png",
+        title: "tmux - gemini-ai@archlinux:~ (ws:4)",
+        specs: `
+            <p><span class="spec-label">OS:</span> <span class="spec-val">Arch Linux (Cyberpunk)</span></p>
+            <p><span class="spec-label">Kernel:</span> <span class="spec-val">Linux 6.8.0-NEON</span></p>
+            <p><span class="spec-label">WM:</span> <span class="spec-val">sway (waybar)</span></p>
+            <p><span class="spec-label">CPU:</span> <span class="spec-val">Gemini 2.5 Flash [40.1°C]</span></p>
+            <p><span class="spec-label">Song:</span> <span class="spec-val">Kavinsky - Nightcall</span></p>
+        `,
+        toastMsg: "Workspace 4: Cyberpunk Synthwave Neon"
+    }
+};
+
+// Current active workspace ID
+let currentWorkspace = "1";
+
+// Initialize Live Status Bar Clock
+function updateClock() {
+    const now = new Date();
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const dayName = days[now.getDay()];
+    const monthName = months[now.getMonth()];
+    const dayNum = String(now.getDate()).padStart(2, '0');
+    const yearShort = String(now.getFullYear()).slice(-2);
+    
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    const formattedTime = `${dayName} ${monthName}/${dayNum}/${yearShort} ${hours}:${minutes}${ampm}`;
+    if (statusBarClock) {
+        statusBarClock.textContent = formattedTime;
+    }
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Switch Workspace function
+function switchWorkspace(wsId) {
+    const theme = WORKSPACE_THEMES[wsId];
+    if (!theme) return;
+
+    currentWorkspace = wsId;
+
+    // Update body attribute for CSS theme rules
+    document.body.setAttribute("data-workspace", wsId);
+
+    // Update background wallpaper with crossfade
+    if (wallpaperBg) {
+        wallpaperBg.style.backgroundImage = `url('${theme.wallpaper}')`;
+    }
+
+    // Update Neofetch preview image
+    if (neofetchImg) {
+        neofetchImg.src = theme.neofetchImg || theme.wallpaper;
+    }
+
+    // Update Neofetch info text
+    if (neofetchInfo) {
+        neofetchInfo.innerHTML = theme.specs;
+    }
+
+    // Update Terminal titlebar text
+    if (terminalTitle) {
+        terminalTitle.textContent = theme.title;
+    }
+
+    // Update active workspace button styling
+    wsButtons.forEach(b => {
+        if (b.dataset.ws === wsId) {
+            b.classList.add("active");
+        } else {
+            b.classList.remove("active");
+        }
+    });
+
+    // Show toast notification
+    showToast(theme.toastMsg);
+}
+
+// Workspace button click listeners
+wsButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        switchWorkspace(btn.dataset.ws);
+    });
+});
+
+// Toast notification helper
+function showToast(message) {
+    if (!scrotNotification) return;
+    const toastText = scrotNotification.querySelector(".toast-text");
+    if (toastText) toastText.textContent = message;
+    scrotNotification.classList.remove("hidden");
+
+    setTimeout(() => {
+        scrotNotification.classList.add("hidden");
+    }, 2200);
+}
 
 // Submit button click event
-submitBtn.addEventListener("click", askQuestion);
+submitBtn.addEventListener("click", handleCommand);
 
-// Enter key se bhi submit ho sake
+// Enter key submit
 questionInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter" && questionInput.value.trim()) {
-        askQuestion();
+        handleCommand();
     }
 });
 
-async function askQuestion() {
+async function handleCommand() {
+    const inputVal = questionInput.value.trim();
+    if (!inputVal) return;
 
+    questionInput.value = "";
 
-    const question =  questionInput.value.trim();
-
-    // Validation
-    if (!question) {
-        showError("Question cannot be empty!");
+    // Handle Built-in Terminal Commands
+    if (inputVal.toLowerCase() === "clear") {
+        answersContainer.innerHTML = "";
         return;
     }
 
-    // Clear previous errors
-    hideError();
+    if (inputVal.toLowerCase() === "help") {
+        displayQuestion("help");
+        displayAnswer(`**Available Commands:**\n- \`ask <question>\` or type any prompt directly.\n- \`ws <1-4>\`: Switch to workspace 1, 2, 3, or 4.\n- \`clear\`: Clear terminal output log.\n- \`neofetch\`: Display system & model specs.\n- \`help\`: Show this help menu.`);
+        return;
+    }
 
-    // Disable button and show loading
+    if (inputVal.toLowerCase().startsWith("ws ")) {
+        const targetWs = inputVal.split(" ")[1];
+        if (WORKSPACE_THEMES[targetWs]) {
+            switchWorkspace(targetWs);
+            displayQuestion(`ws ${targetWs}`);
+            displayAnswer(`Switched to **Workspace ${targetWs}** (${WORKSPACE_THEMES[targetWs].name})`);
+            return;
+        }
+    }
+
+    if (inputVal.toLowerCase() === "neofetch") {
+        const theme = WORKSPACE_THEMES[currentWorkspace];
+        displayQuestion("neofetch");
+        displayAnswer(`\`\`\`\nTheme: ${theme.name}\n${theme.title}\nStatus: Active\n\`\`\``);
+        return;
+    }
+
+    // Otherwise, treat as query to Gemini
+    askQuestion(inputVal);
+}
+
+async function askQuestion(question) {
+    hideError();
     submitBtn.disabled = true;
     loadingDiv.classList.remove("hidden");
 
+    showToast("Taking scrot..");
+
     try {
-        // Display question
         displayQuestion(question);
 
-        // Send POST request to backend
         const response = await fetch(`${BACKEND_URL}/ask`, {
             method: "POST",
             headers: {
@@ -46,25 +231,24 @@ async function askQuestion() {
             },
             body: JSON.stringify({ question: question })
         });
-        console.log(response)
 
         const data = await response.json().catch(() => null);
 
-        if (response.ok && data && data.success) {
-            // Display answer
+        if (data && data.success && data.answer) {
             displayAnswer(data.answer);
-            // Clear input
-            questionInput.value = "";
         } else {
-            const errorMsg = (data && data.error) ? data.error : `Server Error (${response.status})`;
+            const errorMsg = (data && (data.error || data.message))
+                ? (data.error || data.message)
+                : (response.status === 405 
+                    ? "HTTP 405: Method Not Allowed. Backend server expects POST /ask." 
+                    : `Server returned status ${response.status}`);
             showError(errorMsg);
         }
 
     } catch (error) {
         console.error("Error:", error);
-        showError("Could not connect to the server. Please check if backend is running.");
+        showError("Could not connect to the backend server. Please verify node server is running on http://localhost:3000.");
     } finally {
-        // Button ko enable karo aur loading hide karo
         submitBtn.disabled = false;
         loadingDiv.classList.add("hidden");
     }
@@ -73,18 +257,20 @@ async function askQuestion() {
 function displayQuestion(question) {
     const messageDiv = document.createElement("div");
     messageDiv.className = "message question";
-    messageDiv.textContent = question;
+    messageDiv.innerHTML = `<span class="prompt-symbol">λ ~/_</span> ${escapeHtml(question)}`;
     answersContainer.appendChild(messageDiv);
     
-    // Scroll to bottom
     answersContainer.scrollTop = answersContainer.scrollHeight;
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function renderMarkdown(text) {
     if (typeof marked !== "undefined" && typeof marked.parse === "function") {
         return marked.parse(text, { breaks: true });
     }
-    // Fallback if marked JS is unavailable
     return text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -103,7 +289,6 @@ function displayAnswer(answer) {
     messageDiv.innerHTML = renderMarkdown(answer);
     answersContainer.appendChild(messageDiv);
     
-    // Scroll to bottom
     answersContainer.scrollTop = answersContainer.scrollHeight;
 }
 
@@ -115,3 +300,6 @@ function showError(message) {
 function hideError() {
     errorDiv.classList.add("hidden");
 }
+
+// Initial workspace setup
+switchWorkspace("1");
